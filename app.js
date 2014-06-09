@@ -8,8 +8,6 @@ var pcap = require('pcap');
 Collector(function(flow) {
     if (flow && flow.flow.records && flow.flow.records.length>0) {
         flow.flow.records.forEach(function(n) {
-            console.log('process record',n);
-
             if (n.type == 'raw') {
                 if (n.protocolText == 'ethernet') {
                     try {
