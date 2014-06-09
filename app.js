@@ -98,8 +98,7 @@ Collector(function(flow) {
                     
                     config.rules.forEach(function(r) {
                         // Lets check if it belong to the correct VLAN
-                        console.log(r);
-
+                        //console.log(r);
                         if (r.vlans instanceof Array) {
                             if (pkt.vlan.id) {
                                 if (r.vlans.indexOf(pkt.vlan.id)<0) return;
