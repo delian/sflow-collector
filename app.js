@@ -23,7 +23,7 @@ function ipMatch(net,ip) {
     var x = net.match(/^(\d+\.\d+\.\d+\.\d+)\/(\d+)/);
     if (!x) return 0;
     var netNum = ip2num(x[1]);
-    var netCount = (1<<(32-parseInt(x[2])));
+    var netCount = Math.pow(2,32-parseInt(x[2]));
     //var netMask = ((1<<30)*4)-netCount;
     var ipNum = ip2num(ip);
     return (ipNum>=netNum) && (ipNum<netNum+netCount);
@@ -104,8 +104,6 @@ Collector(function(flow) {
                                 if (r.vlans.indexOf(pkt.vlan.id)<0) return;
                             } else return;
                         }
-                        console.log('VLAN is ok');
-
                         // Lets check if the destination IP address belong to a group of networks
                         if (r.networks instanceof Array) {
                             console.log('rrr', pkt.ip.daddr,r.networks,ipBelong(pkt.ip.daddr, r.networks));
