@@ -94,6 +94,7 @@ Collector(function(flow) {
                     } catch(e) { console.log(e);return; }
 
                     if (pkt.ethertype!=2048) return;
+                    if (!(pkt.ip.tcp || pkt.ip.udp)) return;
                     console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport);
                     
                     config.rules.forEach(function(r) {
