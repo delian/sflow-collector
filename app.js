@@ -4,6 +4,85 @@
 
 var Collector = require('node-sflow');
 var pcap = require('pcap');
+var config = require('./config.json');
+var exec = require('child_process').exec;
+
+function startApp(n) {
+    exec(n, function callback(error, stdout){
+        console.log('Executed',n,stdout);
+    });
+}
+
+function ip2num(ip) {
+    var x = ip.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+    if (!x) return 0;
+    return parseInt(x[4])+(parseInt(x[3])<<8)+(parseInt(x[2])<<16)+((parseInt(x[1])<<16)*256);
+}
+
+function ipMatch(net,ip) {
+    var x = net.match(/^(\d+\.\d+\.\d+\.\d+)\/(\d+)/);
+    if (!x) return 0;
+    var netNum = ip2num(x[1]);
+    var netCount = (1<<(32-parseInt(x[2])));
+    //var netMask = ((1<<30)*4)-netCount;
+    var ipNum = ip2num(ip);
+    return (ipNum>=netNum) && (ipNum<netNum+netCount);
+}
+
+function ipBelong(ip,nets) {
+    for (var i = nets.length-1;i>=0;i--) {
+        if (ipMatch(nets[i],ip)) return 1;
+    }
+    return 0;
+}
+
+if (config && typeof config.rules instanceof Array) {
+    config.rules.forEach(function(n) {
+        var sampleInterval = 30;
+        var pps = 100;
+        var minInterval = 30;
+        var maxInterval = 600;
+        var multiplier = 2;
+        var clearInterval = 600;
+
+        if (n.thresholds) {
+            sampleInterval = n.thresholds.sampleInterval || sampleInterval;
+            pps = n.thresholds.pps || pps;
+            minInterval = n.thresholds.minInterval || minInterval;
+            maxInterval = n.thresholds.maxInterval || maxInterval;
+            multiplier = n.thresholds.multiplier || multiplier;
+            clearInterval = n.thresholds.clearInterval || clearInterval;
+        }
+
+        n.counters = {};
+
+        setInterval(function() {
+            Object.keys(n.counters).forEach(function(s) {
+                var p = n.counters[s];
+                if (p.packets>pps) {
+                    if (!p.trigger) {
+                        console.log('Trigger the startScript for',n,'execute', n.startScript);
+                        startApp(n.startScript);
+                        p.trigger = 1;
+                        p.clearInterval = clearInterval;
+                        setTimeout(function() {
+                            console.log('Trigger the stopScript for',n,'execute', n.stopScript);
+                            startApp(n.stopScript);
+                            p.trigger = 0;
+                        }, p.nextBlockInterval*1000);
+                        p.nextBlockInterval *= multiplier;
+                    }
+                } else {
+                    if (!p.trigger) {
+                        p.clearInterval-=sampleInterval;
+                        if (p.clearInterval<=0) p.nextBlockInterval = minInterval; // Next Time we will block for this time
+                    }
+                }
+                s.packets = 0;
+            });
+        },sampleInterval*1000);
+    });
+}
 
 Collector(function(flow) {
     if (flow && flow.flow.records && flow.flow.records.length>0) {
@@ -12,9 +91,33 @@ Collector(function(flow) {
                 if (n.protocolText == 'ethernet') {
                     try {
                         var pkt = pcap.decode.ethernet(n.header, 0);
-                        if (pkt.ethertype!=2048) return;
-                        console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport)
                     } catch(e) { console.log(e); }
+
+                    if (pkt.ethertype!=2048) return;
+                    console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport);
+
+                    // Lets check if it belong to the correct VLAN
+                    if (n.vlan instanceof Array) {
+                        if (pkt.vlan.id) {
+                            if (n.vlan.indexOf(pkt.vlan.id)<0) return;
+                        } else return;
+                    }
+
+                    // Lets check if the destination IP address belong to a group of networks
+                    if (n.networks instanceof Array) {
+                        if (!ipBelong(pkt.ip.daddr, n.networks)) return;
+                    }
+
+                    // Now we have match both for VLANs and Networks
+                    if (typeof n.counters[pkt.ip.daddr] == 'undefined') n.counters[pkt.ip.daddr] = {
+                        trigger: 0,
+                        packets: 0,
+                        nextBlockInterval: (n.thresholds && n.thresholds.minInterval)? n.thresholds.minInterval:30,
+                        clearInterval: 0
+                    };
+
+                    var p = n.counters[pkt.ip.daddr];
+                    p.packets++;
                 }
             }
         });

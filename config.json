@@ -1,0 +1,18 @@
+{
+    "rules": [
+        {
+            "networks": [ "0.0.0.0/0" ],
+            "vlans": [ 1000 ],
+            "thresholds": {
+                "sampleInterval": 30,
+                "pps": 100,
+                "minInterval": 30,
+                "maxInterval": 600,
+                "multiplier": 2,
+                "clearInterval": 600
+            },
+            "startScript": "xxxx",
+            "stopScript": "yyyy"
+        }
+    ]
+}
