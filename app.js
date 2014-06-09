@@ -14,8 +14,7 @@ Collector(function(flow) {
                 if (n.protocolText == 'ethernet') {
                     try {
                         var pkt = pcap.decode.ethernet(n.header, 0);
-                        console.log(pkt);
-                        if (pkt.ethertype==2048) return;
+                        if (pkt.ethertype!=2048) return;
                         console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport)
                     } catch(e) { console.log(e); }
                 }
