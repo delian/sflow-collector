@@ -100,16 +100,18 @@ Collector(function(flow) {
                         // Lets check if it belong to the correct VLAN
                         console.log(r);
 
-                        if (r.vlan instanceof Array) {
+                        if (r.vlans instanceof Array) {
                             if (pkt.vlan.id) {
-                                if (r.vlan.indexOf(pkt.vlan.id)<0) return;
+                                if (r.vlans.indexOf(pkt.vlan.id)<0) return;
                             } else return;
                         }
+                        console.log('VLAN is ok');
 
                         // Lets check if the destination IP address belong to a group of networks
                         if (r.networks instanceof Array) {
                             if (!ipBelong(pkt.ip.daddr, r.networks)) return;
                         }
+                        console.log('IP is ok');
 
                         // Now we have match both for VLANs and Networks
                         console.log('counters',r);
