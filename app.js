@@ -54,6 +54,7 @@ if (config && typeof config.rules instanceof Array) {
             clearInterval = n.thresholds.clearInterval || clearInterval;
         }
 
+        console.log(n);
         n.counters = {};
 
         setInterval(function() {
