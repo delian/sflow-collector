@@ -98,32 +98,31 @@ Collector(function(flow) {
                     if (pkt.ethertype!=2048) return;
                     console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport);
                     
-                    config.rules.forEach(funtion(r) {
-                    // Lets check if it belong to the correct VLAN
-                    if (n.vlan instanceof Array) {
-                        if (pkt.vlan.id) {
-                            if (n.vlan.indexOf(pkt.vlan.id)<0) return;
-                        } else return;
-                    }
+                    config.rules.forEach(function(r) {
+                        // Lets check if it belong to the correct VLAN
+                        if (r.vlan instanceof Array) {
+                            if (pkt.vlan.id) {
+                                if (r.vlan.indexOf(pkt.vlan.id)<0) return;
+                            } else return;
+                        }
 
-                    // Lets check if the destination IP address belong to a group of networks
-                    if (n.networks instanceof Array) {
-                        if (!ipBelong(pkt.ip.daddr, n.networks)) return;
-                    }
+                        // Lets check if the destination IP address belong to a group of networks
+                        if (r.networks instanceof Array) {
+                            if (!ipBelong(pkt.ip.daddr, r.networks)) return;
+                        }
 
-                    // Now we have match both for VLANs and Networks
-                    console.log('counters',n);
-                    if (typeof n.counters[pkt.ip.daddr] == 'undefined') n.counters[pkt.ip.daddr] = {
-                        trigger: 0,
-                        packets: 0,
-                        nextBlockInterval: (n.thresholds && n.thresholds.minInterval)? n.thresholds.minInterval:30,
-                        clearInterval: 0
-                    };
+                        // Now we have match both for VLANs and Networks
+                        console.log('counters',r);
+                        if (typeof r.counters[pkt.ip.daddr] == 'undefined') r.counters[pkt.ip.daddr] = {
+                            trigger: 0,
+                            packets: 0,
+                            nextBlockInterval: (r.thresholds && r.thresholds.minInterval)? r.thresholds.minInterval:30,
+                            clearInterval: 0
+                        };
 
-                    var p = n.counters[pkt.ip.daddr];
-                    p.packets++;
+                        var p = r.counters[pkt.ip.daddr];
+                        p.packets++;
                     });
-
                 }
             }
         });
