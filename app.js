@@ -37,7 +37,6 @@ function ipBelong(ip,nets) {
 }
 
 if (config && config.rules instanceof Array) {
-    console.log('xx');
     config.rules.forEach(function(n) {
         var sampleInterval = 30;
         var pps = 100;
@@ -55,7 +54,6 @@ if (config && config.rules instanceof Array) {
             clearInterval = n.thresholds.clearInterval || clearInterval;
         }
 
-        console.log(n);
         n.counters = {};
 
         setInterval(function() {
@@ -100,6 +98,8 @@ Collector(function(flow) {
                     
                     config.rules.forEach(function(r) {
                         // Lets check if it belong to the correct VLAN
+                        console.log(r);
+
                         if (r.vlan instanceof Array) {
                             if (pkt.vlan.id) {
                                 if (r.vlan.indexOf(pkt.vlan.id)<0) return;
@@ -127,4 +127,4 @@ Collector(function(flow) {
             }
         });
     }
-}).listen(6344);
+}).listen(config.collectorPort||6344);
