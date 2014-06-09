@@ -12,7 +12,7 @@ Collector(function(flow) {
 
             if (n.type == 'raw') {
                 if (n.protocolText == 'ethernet') {
-                    console.log(decode.ethernet.pcap(n.header,0));
+                    console.log(pcap.decode.ethernet(n.header,0));
                 }
             }
         });
