@@ -108,6 +108,7 @@ Collector(function(flow) {
 
                         // Lets check if the destination IP address belong to a group of networks
                         if (r.networks instanceof Array) {
+                            console.log('rrr', r.networks);
                             if (!ipBelong(pkt.ip.daddr, r.networks)) return;
                         }
                         console.log('IP is ok');
