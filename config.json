@@ -1,8 +1,9 @@
 {
+    "collectorPort": 6344,
     "rules": [
         {
             "networks": [ "0.0.0.0/0" ],
-            "vlans": [ 1000 ],
+            "vlans": [ 8,529,1406,1633,3737,3942,1919,1939,1991,592,2177,1917,1907,2347 ],
             "thresholds": {
                 "sampleInterval": 30,
                 "pps": 100,
