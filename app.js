@@ -59,7 +59,7 @@ if (config && config.rules instanceof Array) {
         setInterval(function() {
             Object.keys(n.counters).forEach(function(ip) {
                 var p = n.counters[ip];
-                console.log('Counters for',ip,p)
+                console.log('Counters for',ip, 'average pps:',p.packets/sampleInterval,'of',pps,p);
                 if (p.packets>pps*sampleInterval) {
                     if (!p.trigger) {
                         console.log('Trigger the startScript for',ip,'execute', n.startScript);
