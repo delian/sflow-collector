@@ -80,7 +80,7 @@ if (config && config.rules instanceof Array) {
                         if (p.clearInterval<=0) p.nextBlockInterval = minInterval; // Next Time we will block for this time
                     }
                 }
-                s.packets = 0;
+                p.packets = 0;
             });
         },sampleInterval*1000);
     });
