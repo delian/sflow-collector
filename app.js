@@ -7,9 +7,9 @@ var pcap = require('pcap');
 var config = require('./config.json');
 var exec = require('child_process').exec;
 
-function startApp(n) {
-    exec(n, function callback(error, stdout){
-        console.log('Executed',n,stdout);
+function startApp(n,ip) {
+    exec(n+' '+ip, function callback(error, stdout){
+        console.log('Completed execution',n,stdout);
     });
 }
 
@@ -57,20 +57,22 @@ if (config && config.rules instanceof Array) {
         n.counters = {};
 
         setInterval(function() {
-            Object.keys(n.counters).forEach(function(s) {
-                var p = n.counters[s];
-                if (p.packets>pps) {
+            Object.keys(n.counters).forEach(function(ip) {
+                var p = n.counters[ip];
+                console.log('Counters for',ip,p)
+                if (p.packets>pps*sampleInterval) {
                     if (!p.trigger) {
-                        console.log('Trigger the startScript for',n,'execute', n.startScript);
-                        startApp(n.startScript);
+                        console.log('Trigger the startScript for',ip,'execute', n.startScript);
+                        startApp(n.startScript,ip);
                         p.trigger = 1;
                         p.clearInterval = clearInterval;
                         setTimeout(function() {
-                            console.log('Trigger the stopScript for',n,'execute', n.stopScript);
-                            startApp(n.stopScript);
+                            console.log('Trigger the stopScript for',ip,'execute', n.stopScript);
+                            startApp(n.stopScript,ip);
                             p.trigger = 0;
                         }, p.nextBlockInterval*1000);
                         p.nextBlockInterval *= multiplier;
+                        if (p.nextBlockInterval>maxInterval) p.nextBlockInterval=maxInterval; // Never block for more than maxInterval
                     }
                 } else {
                     if (!p.trigger) {
