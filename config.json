@@ -11,7 +11,8 @@
                 "minInterval": 30,
                 "maxInterval": 600,
                 "multiplier": 2,
-                "clearInterval": 600
+                "clearInterval": 600,
+                "unblockForced": true
             },
             "startScript": "/home/delian/sflow-collector/flood_start.sh",
             "stopScript": "/home/delian/sflow-collector/flood_stop.sh"

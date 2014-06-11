@@ -46,6 +46,7 @@ if (config && config.rules instanceof Array) {
         var maxInterval = 600;
         var multiplier = 2;
         var clearInterval = 600;
+        var unblockUnforced = true;
 
         if (n.thresholds) {
             sampleInterval = n.thresholds.sampleInterval || sampleInterval;
@@ -54,6 +55,7 @@ if (config && config.rules instanceof Array) {
             maxInterval = n.thresholds.maxInterval || maxInterval;
             multiplier = n.thresholds.multiplier || multiplier;
             clearInterval = n.thresholds.clearInterval || clearInterval;
+            unblockUnforced = !(n.thresholds.unblockForced);
         }
 
         n.counters = {};
@@ -72,7 +74,7 @@ if (config && config.rules instanceof Array) {
                     }
                     if (verbose) console.log('Next unblock check in', p.nextBlockInterval);
                     setTimeout(function() {
-                        if (p.packets>pps*sampleInterval) {
+                        if (unblockUnforced && p.packets>pps*sampleInterval) {
                             return triggerStart(ip,p,n);
                         } else {
                             if (verbose) console.log('Trigger the stopScript for',ip,'execute', n.stopScript);
