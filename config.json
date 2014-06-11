@@ -1,5 +1,6 @@
 {
     "collectorPort": 6344,
+    "verbose": true,
     "rules": [
         {
             "networks": [ "0.0.0.0/0" ],
