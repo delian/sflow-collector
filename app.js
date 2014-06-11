@@ -55,7 +55,7 @@ if (config && config.rules instanceof Array) {
             maxInterval = n.thresholds.maxInterval || maxInterval;
             multiplier = n.thresholds.multiplier || multiplier;
             clearInterval = n.thresholds.clearInterval || clearInterval;
-            unblockUnforced = !(n.thresholds.unblockForced);
+            unblockUnforced = !(n.thresholds.forcedStop);
         }
 
         n.counters = {};
