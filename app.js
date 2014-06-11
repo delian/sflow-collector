@@ -7,9 +7,11 @@ var pcap = require('pcap');
 var config = require('./config.json');
 var exec = require('child_process').exec;
 
+var verbose = config.verbose || false;
+
 function startApp(n,ip) {
     exec(n+' '+ip, function callback(error, stdout){
-        console.log('Completed execution',n,stdout);
+        if (verbose) console.log('Completed execution',n,stdout);
     });
 }
 
@@ -59,15 +61,15 @@ if (config && config.rules instanceof Array) {
         setInterval(function() {
             Object.keys(n.counters).forEach(function(ip) {
                 var p = n.counters[ip];
-                console.log('Counters for',ip, 'average pps:',p.packets/sampleInterval,'of',pps,p);
+                if (verbose) console.log('Counters for',ip, 'average pps:',p.packets/sampleInterval,'of',pps,p);
                 if (p.packets>pps*sampleInterval) {
                     if (!p.trigger) {
-                        console.log('Trigger the startScript for',ip,'execute', n.startScript);
+                        if (verbose) console.log('Trigger the startScript for',ip,'execute', n.startScript);
                         startApp(n.startScript,ip);
                         p.trigger = 1;
                         p.clearInterval = clearInterval;
                         setTimeout(function() {
-                            console.log('Trigger the stopScript for',ip,'execute', n.stopScript);
+                            if (verbose) console.log('Trigger the stopScript for',ip,'execute', n.stopScript);
                             startApp(n.stopScript,ip);
                             p.trigger = 0;
                         }, p.nextBlockInterval*1000);
@@ -97,11 +99,10 @@ Collector(function(flow) {
 
                     if (pkt.ethertype!=2048) return;
                     if (!(pkt.ip.tcp || pkt.ip.udp)) return;
-                    console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport);
+                    if (verbose) console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport);
                     
                     config.rules.forEach(function(r) {
                         // Lets check if it belong to the correct VLAN
-                        //console.log(r);
                         if (r.vlans instanceof Array) {
                             if (pkt.vlan.id) {
                                 if (r.vlans.indexOf(pkt.vlan.id)<0) return;
