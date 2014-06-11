@@ -6,14 +6,14 @@
             "vlans": [ 8,529,1406,1633,3737,3942,1919,1939,1991,592,2177,1917,1907,2347 ],
             "thresholds": {
                 "sampleInterval": 30,
-                "pps": 100,
+                "pps": 10,
                 "minInterval": 30,
                 "maxInterval": 600,
                 "multiplier": 2,
                 "clearInterval": 600
             },
-            "startScript": "xxxx",
-            "stopScript": "yyyy"
+            "startScript": "/home/delian/sflow-collector/flood_start.sh",
+            "stopScript": "/home/delian/sflow-collector/flood_stop.sh"
         }
     ]
 }
