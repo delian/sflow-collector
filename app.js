@@ -64,7 +64,7 @@ if (config && config.rules instanceof Array) {
                 if (verbose) console.log('Counters for',ip, 'average pps:',p.packets/sampleInterval,'of',pps,p);
                 if (p.packets>pps*sampleInterval) {
                     if (!p.trigger) {
-                        if (verbose) console.log('Trigger the startScript for',ip,'execute', n.startScript);
+                        if (verbose) console.log('Trigger the startScript for',ip,'execute', n.startScript,'ublock in',p.nextBlockInterval);
                         startApp(n.startScript,ip);
                         p.trigger = 1;
                         p.clearInterval = clearInterval;
@@ -72,7 +72,7 @@ if (config && config.rules instanceof Array) {
                             if (verbose) console.log('Trigger the stopScript for',ip,'execute', n.stopScript);
                             startApp(n.stopScript,ip);
                             p.trigger = 0;
-                        }, p.nextBlockInterval*1000);
+                        }, p.nextBlockInterval*1000-100); // Preseve the order
                         p.nextBlockInterval *= multiplier;
                         if (p.nextBlockInterval>maxInterval) p.nextBlockInterval=maxInterval; // Never block for more than maxInterval
                     }
