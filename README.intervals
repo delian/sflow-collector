@@ -1,0 +1,7 @@
+[2:23:04 PM] Delian Delchev: inache za da slojish block perioda na 10 min
+[2:23:18 PM] Delian Delchev: sloji minInterval (tova e min block period) da e 600 secundi
+[2:23:30 PM] Delian Delchev: ako iskash block perioda dinamichno da se vdiga, ako flooda prodaljava\
+[2:23:51 PM] Delian Delchev: sloji maxInterval na niakakva stoinost da rechem 3600
+[2:24:03 PM] Delian Delchev: taka block perioda shte ti se dviji ot 600 do 3600 sekundi
+[2:24:11 PM] Delian Delchev: a multiplier-a kazva kak narastva block perioda
+

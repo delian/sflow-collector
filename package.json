@@ -1,12 +1,12 @@
 {
   "name": "sflow",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "start": "node ./app.js"
   },
   "dependencies": {
-    "pcap": "^1.2.0",
+    "pcap2": "*",
     "node-sflow": "*"
   }
 }

@@ -1,13 +1,13 @@
 {
-    "collectorPort": 6343,
+    "collectorPort": 6344,
     "verbose": true,
     "rules": [
         {
             "networks": [ "0.0.0.0/0" ],
-            "vlans": [ 4,426,428,469,701,846,847,1100,1239,1539,1667,2770,2816,2820,3185,4067 ],
+            "vlans": [ 529,1406,1633,3737,3942,1919,1939,1991,592,2177,1917,1907,2347 ],
             "thresholds": {
                 "sampleInterval": 20,
-                "pps": 4,
+                "pps": 5,
                 "minInterval": 600,
                 "maxInterval": 1800,
                 "multiplier": 2,

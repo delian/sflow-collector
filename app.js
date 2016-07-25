@@ -3,16 +3,20 @@
  */
 
 var Collector = require('node-sflow');
-var pcap = require('pcap');
+var pcap = require('pcap2');
 var config = require('./config.json');
 var exec = require('child_process').exec;
 
-var verbose = config.verbose || false;
+var verbose = config.verbose || true;
 
 function startApp(n,ip) {
     exec(n+' '+ip, function callback(error, stdout){
         if (verbose) console.log('Completed execution',n,stdout);
     });
+}
+
+function a2ip(a) {
+    return a.addr[0]+'.'+a.addr[1]+'.'+a.addr[2]+'.'+a.addr[3];
 }
 
 function ip2num(ip) {
@@ -105,35 +109,42 @@ Collector(function(flow) {
         flow.flow.records.forEach(function(n) {
             if (n.type == 'raw') {
                 if (n.protocolText == 'ethernet') {
-                    try {
-                        var pkt = pcap.decode.ethernet(n.header, 0);
-                    } catch(e) { console.log(e);return; }
-
-                    if (pkt.ethertype!=2048) return;
-                    if (!(pkt.ip.tcp || pkt.ip.udp)) return;
-                    if (verbose) console.log('VLAN',pkt.vlan?pkt.vlan.id:'none','Packet',pkt.ip.protocol_name,pkt.ip.saddr,':',pkt.ip.tcp?pkt.ip.tcp.sport:pkt.ip.udp.sport,'->',pkt.ip.daddr,':',pkt.ip.tcp?pkt.ip.tcp.dport:pkt.ip.udp.dport);
+                    var pcapDummyHeader = new Buffer(16);
+                    pcapDummyHeader.writeUInt32LE((new Date()).getTime()/1000,0); // Dummy time, you can take it from the sflow if you like
+                    pcapDummyHeader.writeUInt32LE((new Date()).getTime()%1000,4);
+                    pcapDummyHeader.writeUInt32LE(n.header.length,8);
+                    pcapDummyHeader.writeUInt32LE(n.frameLen,12);
+                    var pkt = pcap.decode.packet({
+                       buf: n.header,
+                       header: pcapDummyHeader,
+                       link_type: 'LINKTYPE_ETHERNET'
+                    });
+                    if (pkt.payload.ethertype!=2048) return; // Check if it is IPV4 packet
+                    //console.log('VLAN',pkt.vlan,'Packet',pkt.payload.IPv4)
+                    if (pkt.payload.payload.protocol!=6 && pkt.payload.payload.protocol!=17) return;
+                    if (verbose) console.log('VLAN',pkt.payload.vlan?pkt.payload.vlan.id:'none','Packet',pkt.payload.payload.protocol,a2ip(pkt.payload.payload.saddr),':',pkt.payload.payload.payload.sport,'->',a2ip(pkt.payload.payload.daddr),':',pkt.payload.payload.payload.dport);
                     
                     config.rules.forEach(function(r) {
                         // Lets check if it belong to the correct VLAN
                         if (r.vlans instanceof Array) {
-                            if (pkt.vlan.id) {
-                                if (r.vlans.indexOf(pkt.vlan.id)<0) return;
+                            if (pkt.payload.vlan.id) {
+                                if (r.vlans.indexOf(pkt.payload.vlan.id)<0) return;
                             } else return;
                         }
                         // Lets check if the destination IP address belong to a group of networks
                         if (r.networks instanceof Array) {
-                            if (!ipBelong(pkt.ip.daddr, r.networks)) return;
+                            if (!ipBelong(a2ip(pkt.payload.payload.daddr), r.networks)) return;
                         }
 
                         // Now we have match both for VLANs and Networks
-                        if (typeof r.counters[pkt.ip.daddr] == 'undefined') r.counters[pkt.ip.daddr] = {
+                        if (typeof r.counters[a2ip(pkt.payload.payload.daddr)] == 'undefined') r.counters[a2ip(pkt.payload.payload.daddr)] = {
                             trigger: 0,
                             packets: 0,
                             nextBlockInterval: (r.thresholds && r.thresholds.minInterval)? r.thresholds.minInterval:30,
                             clearInterval: 0
                         };
 
-                        var p = r.counters[pkt.ip.daddr];
+                        var p = r.counters[a2ip(pkt.payload.payload.daddr)];
                         p.packets++;
                     });
                 }
