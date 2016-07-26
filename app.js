@@ -7,7 +7,7 @@ var pcap = require('pcap2');
 var config = require('./config.json');
 var exec = require('child_process').exec;
 
-var verbose = config.verbose || true;
+var verbose = config.verbose || false;
 
 function startApp(n,ip) {
     exec(n+' '+ip, function callback(error, stdout){
@@ -114,11 +114,17 @@ Collector(function(flow) {
                     pcapDummyHeader.writeUInt32LE((new Date()).getTime()%1000,4);
                     pcapDummyHeader.writeUInt32LE(n.header.length,8);
                     pcapDummyHeader.writeUInt32LE(n.frameLen,12);
-                    var pkt = pcap.decode.packet({
-                       buf: n.header,
-                       header: pcapDummyHeader,
-                       link_type: 'LINKTYPE_ETHERNET'
-                    });
+                    try {
+                        var pkt = pcap.decode.packet({
+                           buf: n.header,
+                           header: pcapDummyHeader,
+                           link_type: 'LINKTYPE_ETHERNET'
+                        });
+                    } catch(e) {
+                      console.log('Problem with decode',e);
+                      console.log('n',n.header);
+                      return;
+                    }
                     if (pkt.payload.ethertype!=2048) return; // Check if it is IPV4 packet
                     //console.log('VLAN',pkt.vlan,'Packet',pkt.payload.IPv4)
                     if (pkt.payload.payload.protocol!=6 && pkt.payload.payload.protocol!=17) return;
